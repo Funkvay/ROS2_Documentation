@@ -4,10 +4,6 @@ Getting Started with ROS2
 
 This guide is intended to help you install and set up ROS2, and get started with creating a Python and C++ packages in ROS2.
 
-Table of Contents:
-
-
-
 1. ### Download ROS2
 
     If you use Ubuntu 22.04: Install ROS2 Humble
