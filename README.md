@@ -85,32 +85,52 @@ This guide is intended to help you install and set up ROS2, and get started with
 
     #### Note: rclcpp stands for ROS Client Library for C++.
 
-8. ### Write a C++ Node and Run it
+8. ### Write a C++ Node, Configure CMakeLists.txt, and Run the Node
+    #### a. Create C++ Source File
+    
+    First, navigate to `/ros2_ws/src/my_cpp_pkg/src` and create a file named `my_first_node.cpp`.
 
-    Navigate to `/ros2_ws/src/my_cpp_pkg/src` and create a file named `my_first_node.cpp`.
+    Include the `rclcpp` library in your `.cpp` file, as it is necessary for writing ROS2 nodes in C++:
 
-    Make sure to `include rclcpp/rclcpp.hpp` in your .cpp file:
-    ```
-    #include rclcpp/rclcpp.hpp
-    ```
+    ```#include rclcpp/rclcpp.hpp```
 
-    To run your node, first build it using:
+    #### b. Configure CMakeLists.txt
 
-    ```
-    colcon build --packages-select my_cpp_pkg
-    ```
+    To build the node, you need to configure the `CMakeLists.txt` file in your package directory `/ros2_ws/src/my_cpp_pkg`.
 
-    Then, execute the following command to run the node:
+    Open `CMakeLists.txt` and ensure it includes the following lines:
 
     ```
-    ros2 run my_cpp_pkg cpp_node_executable_name
-    ```
-    For instance, if your CMake file contains:
-    ```
+    # Set minimum CMake version
+    cmake_minimum_required(VERSION 3.8)
+
+    # Define project name
+    project(my_cpp_pkg)
+
+    # Set compiler options
+    if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    endif()
+
+    # Find dependencies
+    find_package(ament_cmake REQUIRED)
+    find_package(rclcpp REQUIRED)
+    find_package(example_interfaces REQUIRED) # for example_interfaces etc
+
+    # Create an executable
     add_executable(cpp_node src/my_first_node.cpp)
     ament_target_dependencies(cpp_node rclcpp)
+
+    # Install targets
+    install(TARGETS
+    cpp_node
+    DESTINATION lib/${PROJECT_NAME}
+    )
+
+    # Packaging
+    ament_package()
     ```
-    Your executable will be named `cpp_node`.
+ 
 
 9. ### Debug and Monitor Your Nodes with ros2 CLI
 
