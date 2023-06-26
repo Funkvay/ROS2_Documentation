@@ -94,7 +94,7 @@ This guide is intended to help you install and set up ROS2, and get started with
 
     ```#include rclcpp/rclcpp.hpp```
 
-    #### b. Configure CMakeLists.txt
+    #### b. Configure CMakeLists.txt and package.xml
 
     To build the node, you need to configure the `CMakeLists.txt` file in your package directory `/ros2_ws/src/my_cpp_pkg`.
 
@@ -130,6 +130,16 @@ This guide is intended to help you install and set up ROS2, and get started with
     # Packaging
     ament_package()
     ```
+
+    #### package.xml
+
+    here you just need to add 
+    ```
+    <depend>rclcpp</depend>
+    <depend>example_interfaces</depend>
+    ```
+    and other dependencies
+
     #### c. Build the Node
 
     To build your node, navigate to the root of your workspace and execute the following command:
@@ -143,79 +153,80 @@ This guide is intended to help you install and set up ROS2, and get started with
     ```ros2 run my_cpp_pkg cpp_node```
 
     Here, my_cpp_pkg is the name of the package, and cpp_node is the name of the executable we specified in CMakeLists.txt.
+    
 
 9. ### C++ node example
 
-    #### Including Necessary Headers
-    
-    ```
-    #include "rclcpp/rclcpp.hpp"
-    #include <string>
-    #include <functional>
-    ```
-    
-    `#include "rclcpp/rclcpp.hpp"` includes the necessary header file for using the ROS2 C++ client library.
-    
-    #### Defining a Custom Node Class
-    
-    ```
-    class MyNode: public rclcpp::Node
+#### Including Necessary Headers
+
+```
+#include "rclcpp/rclcpp.hpp"
+#include <string>
+#include <functional>
+```
+
+`#include "rclcpp/rclcpp.hpp"` includes the necessary header file for using the ROS2 C++ client library.
+
+#### Defining a Custom Node Class
+
+```
+class MyNode: public rclcpp::Node
+{
+public:
+    MyNode()
+    : Node("cpp_test"), counter(0)
     {
-    public:
-        MyNode()
-        : Node("cpp_test"), counter(0)
-        {
-            RCLCPP_INFO(this->get_logger(), "Hello cpp node");
-            timer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&MyNode::timerCallBack, this)); 
-        }
-    
-    private:
-        int counter;
-    
-        void timerCallBack()
-        {
-            std::string text = "Hello " + std::to_string(counter++);
-            RCLCPP_INFO(this->get_logger(), text.c_str());
-        }
-    
-        rclcpp::TimerBase::SharedPtr timer_;
-    };
-    
-    ```
-    
-    * The constructor MyNode() initializes the base class rclcpp::Node with the name "cpp_test" and initializes counter to 0. It also prints "Hello cpp node" to the console using RCLCPP_INFO.
-    * `timer_` is assigned a timer instance using `this->create_wall_timer`. The timer fires every second and calls the `timerCallBack` method.
-    * `timerCallBack` is a member function that is called every time the timer fires. It increments counter and prints a message to the console.
-    * `rclcpp::TimerBase::SharedPtr timer_;` declares `timer_` as a shared pointer of type `rclcpp::TimerBase`. This is used to store the timer instance.
-    
-    #### Attention !
-    #### rclcpp::TimerBase::SharedPtr vs rclcpp::TimerBase
-    In ROS2, timers are typically managed through shared pointers rather than raw pointers or objects.
-    
-    Why not to use use rclcpp::TimerBase:
-    * Handling the timer directly may lead to manual memory management, and the potential for memory leaks or undefined behavior.
-    
-    As a best practice in ROS2, use `rclcpp::TimerBase::SharedPtr` for managing timers, as it simplifies memory management and improves safety.
-    
-    #### The main Function
-    ```
-    int main(int argc, char **argv)
-    {
-        rclcpp::init(argc, argv);
-    
-        auto node = std::make_shared<MyNode>();
-    
-        rclcpp::spin(node);
-    
-        rclcpp::shutdown();
-        return 0;
+        RCLCPP_INFO(this->get_logger(), "Hello cpp node");
+        timer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&MyNode::timerCallBack, this)); 
     }
-    
-    ```
-    
-    * `rclcpp::init(argc, argv);` initializes the ROS2 communication layers.
-    * `rclcpp::spin(node);` causes the ROS2 node to process callbacks (like the timer callback) until it is shut down.
-    * `rclcpp::shutdown();` cleans up the ROS2 communication resources.
+
+private:
+    int counter;
+
+    void timerCallBack()
+    {
+        std::string text = "Hello " + std::to_string(counter++);
+        RCLCPP_INFO(this->get_logger(), text.c_str());
+    }
+
+    rclcpp::TimerBase::SharedPtr timer_;
+};
+
+```
+
+* The constructor MyNode() initializes the base class rclcpp::Node with the name "cpp_test" and initializes counter to 0. It also prints "Hello cpp node" to the console using RCLCPP_INFO.
+* `timer_` is assigned a timer instance using `this->create_wall_timer`. The timer fires every second and calls the `timerCallBack` method.
+* `timerCallBack` is a member function that is called every time the timer fires. It increments counter and prints a message to the console.
+* `rclcpp::TimerBase::SharedPtr timer_;` declares `timer_` as a shared pointer of type `rclcpp::TimerBase`. This is used to store the timer instance.
+
+#### Attention !
+#### rclcpp::TimerBase::SharedPtr vs rclcpp::TimerBase
+In ROS2, timers are typically managed through shared pointers rather than raw pointers or objects.
+
+Why not to use use rclcpp::TimerBase:
+* Handling the timer directly may lead to manual memory management, and the potential for memory leaks or undefined behavior.
+
+As a best practice in ROS2, use `rclcpp::TimerBase::SharedPtr` for managing timers, as it simplifies memory management and improves safety.
+
+#### The main Function
+```
+int main(int argc, char **argv)
+{
+    rclcpp::init(argc, argv);
+
+    auto node = std::make_shared<MyNode>();
+
+    rclcpp::spin(node);
+
+    rclcpp::shutdown();
+    return 0;
+}
+
+```
+
+* `rclcpp::init(argc, argv);` initializes the ROS2 communication layers.
+* `rclcpp::spin(node);` causes the ROS2 node to process callbacks (like the timer callback) until it is shut down.
+* `rclcpp::shutdown();` cleans up the ROS2 communication resources.
 
 
 
