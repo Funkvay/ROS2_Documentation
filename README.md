@@ -144,7 +144,82 @@ This guide is intended to help you install and set up ROS2, and get started with
 
     Here, my_cpp_pkg is the name of the package, and cpp_node is the name of the executable we specified in CMakeLists.txt.
 
-9. ### Debug and Monitor Your Nodes with ros2 CLI
+9. ### C++ node example
+
+#### Including Necessary Headers
+
+```
+#include "rclcpp/rclcpp.hpp"
+#include <string>
+#include <functional>
+```
+
+`#include "rclcpp/rclcpp.hpp"` includes the necessary header file for using the ROS2 C++ client library.
+
+#### Defining a Custom Node Class
+
+```
+class MyNode: public rclcpp::Node
+{
+public:
+    MyNode()
+    : Node("cpp_test"), counter(0)
+    {
+        RCLCPP_INFO(this->get_logger(), "Hello cpp node");
+        timer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&MyNode::timerCallBack, this)); 
+    }
+
+private:
+    int counter;
+
+    void timerCallBack()
+    {
+        std::string text = "Hello " + std::to_string(counter++);
+        RCLCPP_INFO(this->get_logger(), text.c_str());
+    }
+
+    rclcpp::TimerBase::SharedPtr timer_;
+};
+
+```
+
+* The constructor MyNode() initializes the base class rclcpp::Node with the name "cpp_test" and initializes counter to 0. It also prints "Hello cpp node" to the console using RCLCPP_INFO.
+* `timer_` is assigned a timer instance using `this->create_wall_timer`. The timer fires every second and calls the `timerCallBack` method.
+* `timerCallBack` is a member function that is called every time the timer fires. It increments counter and prints a message to the console.
+* `rclcpp::TimerBase::SharedPtr timer_;` declares `timer_` as a shared pointer of type `rclcpp::TimerBase`. This is used to store the timer instance.
+
+#### Attention !
+#### rclcpp::TimerBase::SharedPtr vs rclcpp::TimerBase
+In ROS2, timers are typically managed through shared pointers rather than raw pointers or objects.
+
+Why not to use use rclcpp::TimerBase:
+* Handling the timer directly may lead to manual memory management, and the potential for memory leaks or undefined behavior.
+
+As a best practice in ROS2, use `rclcpp::TimerBase::SharedPtr` for managing timers, as it simplifies memory management and improves safety.
+
+#### The main Function
+```
+int main(int argc, char **argv)
+{
+    rclcpp::init(argc, argv);
+
+    auto node = std::make_shared<MyNode>();
+
+    rclcpp::spin(node);
+
+    rclcpp::shutdown();
+    return 0;
+}
+
+```
+
+* `rclcpp::init(argc, argv);` initializes the ROS2 communication layers.
+* `rclcpp::spin(node);` causes the ROS2 node to process callbacks (like the timer callback) until it is shut down.
+* `rclcpp::shutdown();` cleans up the ROS2 communication resources.
+
+
+
+10. ### Debug and Monitor Your Nodes with ros2 CLI
 
     After running your node with the following command:
     ```
@@ -160,7 +235,7 @@ This guide is intended to help you install and set up ROS2, and get started with
     ```
     #### Note: the node now is called `abc`
 
-10. ### Colcon
+11. ### Colcon
 
     When you modify the Python code, you need to build the package for changes to take effect. However, using the command below allows you to run your code without having to build it again.
     ```
@@ -169,7 +244,7 @@ This guide is intended to help you install and set up ROS2, and get started with
 
     #### Note: This command creates symbolic links to your source files instead of copying them.
 
-11. ### Rqt and rqt_graph
+12. ### Rqt and rqt_graph
 
     RQT is a software framework that implements various GUI tools as plugins. Run RQT using:
     ```
@@ -177,7 +252,7 @@ This guide is intended to help you install and set up ROS2, and get started with
     ```
     Navigate to `Plugins->Introspection->Node` to see a graph of all the nodes that are currently running.
 
-12. ### Understanding Turtlesim
+13. ### Understanding Turtlesim
 
     Turtlesim is a tool for teaching ROS and ROS packages. Install it using:
     ```
@@ -188,7 +263,7 @@ This guide is intended to help you install and set up ROS2, and get started with
     ros2 run turtlesim turtlesim_node
     ```
 
-13. ### Write a Python/C++ publisher
+14. ### Write a Python/C++ publisher
 
     For example, if you need a string example for the publisher, run:
     ```
@@ -218,7 +293,7 @@ This guide is intended to help you install and set up ROS2, and get started with
     ros2 node info /node_name
     ```
 
-14. ### Publisher and Subscription
+15. ### Publisher and Subscription
 
     For information about a topic:
     ```
@@ -236,7 +311,7 @@ This guide is intended to help you install and set up ROS2, and get started with
     ros2 topic pub -r 10 /topic_name example_interfaces/msg/String "{data: 'hello from terminal'}"
     ```
 
-15. ### Mentioning
+16. ### Mentioning
 
     Run turtlesim and observe how nodes communicate using rqt_graph:
     ```
@@ -244,11 +319,10 @@ This guide is intended to help you install and set up ROS2, and get started with
     ros2 run turtlesim turtle_teleop_key
     ```
 
-16. ### ROS2 Services
+17. ### ROS2 Services
 
     If you wrote a server in C++/Python, test it using:
     ```
     ros2 service list
     ros2 service call /service_name example_interfaces/srv/AddTwoInts "{a: 5, b: 8"}
     ```
-    
