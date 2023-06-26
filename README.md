@@ -130,7 +130,19 @@ This guide is intended to help you install and set up ROS2, and get started with
     # Packaging
     ament_package()
     ```
- 
+    #### c. Build the Node
+
+    To build your node, navigate to the root of your workspace and execute the following command:
+
+    ``` colcon build --packages-select my_cpp_pkg```
+
+    This will build the package `my_cpp_pkg`.
+
+    #### d. Run the Node
+    After building the package, you can run the node using the following command:
+    ```ros2 run my_cpp_pkg cpp_node```
+
+    Here, my_cpp_pkg is the name of the package, and cpp_node is the name of the executable we specified in CMakeLists.txt.
 
 9. ### Debug and Monitor Your Nodes with ros2 CLI
 
